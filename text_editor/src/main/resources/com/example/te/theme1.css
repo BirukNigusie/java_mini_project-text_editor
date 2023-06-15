@@ -1,0 +1,10 @@
+.root {
+    -fx-background-color: #fff;
+}
+
+.text-area {
+    -fx-control-inner-background: #fff;
+    -fx-text-fill: #abb2bf;
+    -fx-font-family: "Consolas", monospace;
+    -fx-font-size: 14px;
+}

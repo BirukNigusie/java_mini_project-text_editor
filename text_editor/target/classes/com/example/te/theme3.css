@@ -1,0 +1,10 @@
+.root {
+    -fx-background-color: #1e1e1e;
+}
+
+.text-area {
+    -fx-control-inner-background: #1e1e1e;
+    -fx-text-fill: #f8f8f2;
+    -fx-font-family: "Source Code Pro", monospace;
+    -fx-font-size: 14px;
+}

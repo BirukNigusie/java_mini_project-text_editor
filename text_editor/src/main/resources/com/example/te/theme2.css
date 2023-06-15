@@ -1,0 +1,10 @@
+.root {
+    -fx-background-color: #0d1117;
+}
+
+.text-area {
+    -fx-control-inner-background: #0d1117;
+    -fx-text-fill: #c9d1d9;
+    -fx-font-family: "Fira Code", monospace;
+    -fx-font-size: 14px;
+}
