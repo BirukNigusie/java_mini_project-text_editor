@@ -145,6 +145,64 @@ public class HelloController {
         });
         editLabel.setContextMenu(contextMenu2);
 
+//View label menu items
+
+        MenuItem zoomIn=new MenuItem("Zoom In");
+        zoomIn.setOnAction(event -> zoomIn());
+
+        MenuItem zoomOut=new MenuItem("Zoom Out");
+        zoomOut.setOnAction(event -> zoomOut());
+
+        MenuItem defaultZoom=new MenuItem("Restore Default");
+        defaultZoom.setOnAction(event -> defaultZoom());
+
+
+        //Format label context menu items
+        MenuItem themesMenuItem = new MenuItem("Themes");
+        themesMenuItem.setOnAction(event -> openThemesDialog());
+
+        MenuItem fontSizeMenuItem = new MenuItem("Font Size");
+        fontSizeMenuItem.setOnAction(event -> openFontSizeDialog());
+
+        MenuItem fontFamilyMenuItem = new MenuItem("Font Family");
+        fontFamilyMenuItem.setOnAction(event -> openFontFamilyDialog());
+
+        MenuItem fontStyleMenuItem = new MenuItem("Font Style");
+        fontStyleMenuItem.setOnAction(event -> openFontStyleDialog());
+
+        MenuItem wordWrapMenuItem = new MenuItem("Word Wrap");
+        wordWrapMenuItem.setOnAction(event -> WordWrap());
+
+        MenuItem textColorMenuItem = new MenuItem("Text Color");
+        textColorMenuItem.setOnAction(event -> setTextColor());
+
+        //view label context menu
+        ContextMenu contextMenu3=new ContextMenu();
+        contextMenu3.getItems().addAll(zoomOut,zoomIn,defaultZoom);
+
+        //Format label context menu
+        ContextMenu contextMenu4=new ContextMenu();
+        contextMenu4.getItems().addAll(themesMenuItem,fontSizeMenuItem,fontFamilyMenuItem,fontStyleMenuItem,textColorMenuItem,wordWrapMenuItem);
+
+        viewlabel.setOnMouseClicked(event -> {
+            if(event.getButton()==MouseButton.PRIMARY){
+                contextMenu3.show(viewlabel,event.getScreenX(),event.getScreenY());
+            }
+        });
+
+
+        formatLabel.setOnMouseClicked(event -> {
+            if(event.getButton()==MouseButton.PRIMARY){
+                contextMenu4.show(formatLabel,event.getScreenX(),event.getScreenY());
+            }
+        });
+        formatLabel.setContextMenu(contextMenu4);
+
+
+        encodingComboBox = new ComboBox<>();
+        lineEndingComboBox = new ComboBox<>();
+
+        statusBar();
 
     }
     // file functions
@@ -394,6 +452,151 @@ public class HelloController {
         String formattedDateTime = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(now);
         textArea.insertText(textArea.getCaretPosition(), formattedDateTime);
     }
+    private void zoomIn(){
+        currentFontSize += 2.0;
+        textArea.setStyle("-fx-font-size: " + currentFontSize + "px;");
+    }
+
+    private void zoomOut(){
+        currentFontSize -= 2.0;
+        textArea.setStyle("-fx-font-size: " + currentFontSize + "px;");
+    }
+
+    private void defaultZoom(){
+        currentFontSize = defaultFontSize;
+        textArea.setStyle("-fx-font-size: " + currentFontSize + "px;");
+    }
+    private void WordWrap() {
+        boolean isWordWrap = textArea.isWrapText();
+        textArea.setWrapText(!isWordWrap);
+    }
+    private void statusBar() {
+        textArea.caretPositionProperty().addListener((observable, oldValue, newValue) -> {
+            int position = newValue.intValue();
+            int row = textArea.getText().substring(0, position).split("\n").length;
+            int column = position - textArea.getText().lastIndexOf("\n", position - 1);
+
+            statusBarLabel.setText("Line: " + row + "   Column: " + column);
+        });
+    }
+    private void setTextColor() {
+        Color initialColor = Color.BLACK;
+        javafx.scene.control.ColorPicker colorPicker = new javafx.scene.control.ColorPicker(initialColor);
+        colorPicker.setPrefWidth(200);
+        javafx.scene.control.Dialog<Color> dialog = new javafx.scene.control.Dialog<>();
+        dialog.getDialogPane().setContent(colorPicker);
+        dialog.getDialogPane().getButtonTypes().addAll(javafx.scene.control.ButtonType.OK, javafx.scene.control.ButtonType.CANCEL);
+        dialog.setResultConverter(buttonType -> buttonType == javafx.scene.control.ButtonType.OK ? colorPicker.getValue() : null);
+        java.util.Optional<Color> result = dialog.showAndWait();
+        result.ifPresent(color -> textArea.setStyle("-fx-text-fill: " + toHexCode(color) + ";"));
+    }
+    private String toHexCode(Color color) {
+        return String.format("#%02X%02X%02X",
+                (int) (color.getRed() * 255),
+                (int) (color.getGreen() * 255),
+                (int) (color.getBlue() * 255));
+    }
+
+    private void openThemesDialog() {
+        Stage dialogStage = new Stage();
+        dialogStage.setTitle("Select a Theme");
+
+        ListView<String> themeList = new ListView<>();
+        themeList.getItems().addAll("Theme 1", "Theme 2", "Theme 3");
+
+        Button applyButton = new Button("Apply");
+        applyButton.setOnAction(event -> {
+            String selectedTheme = themeList.getSelectionModel().getSelectedItem();
+            if (selectedTheme != null) {
+                applyTheme(selectedTheme);
+                dialogStage.close();
+            }
+        });
+        VBox vbox = new VBox(10);
+        vbox.getChildren().addAll(themeList, applyButton);
+        vbox.setPadding(new Insets(10));
+        Scene scene = new Scene(vbox);
+        dialogStage.setScene(scene);
+        dialogStage.show();
+    }
+
+    private void applyTheme(String theme) {
+        String cssFile = "theme1.css"; // Default theme
+
+        if (theme.equals("Theme 1")) {
+            cssFile = "C:\\Users\\ASHE\\Desktop\\javatest\\src\\main\\resources\\com\\example\\te/theme1.css";
+        } else if (theme.equals("Theme 2")) {
+            cssFile = "C:\\Users\\ASHE\\Desktop\\javatest\\src\\main\\resources\\com\\example\\te/theme2.css";
+        } else if (theme.equals("Theme 3")) {
+            cssFile = "C:\\Users\\ASHE\\Desktop\\javatest\\src\\main\\resources\\com\\example\\te/theme3.css";
+        }
+
+        try {
+            File file = new File(cssFile);
+            String css = file.toURI().toURL().toExternalForm();
+            textArea.getStylesheets().clear();
+            textArea.getStylesheets().add(css);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    private void openFontSizeDialog() {
+        TextInputDialog dialog = new TextInputDialog(String.valueOf(currentFontSize));
+        dialog.setTitle("Font Size");
+        dialog.setHeaderText(null);
+        dialog.setContentText("Enter the font size:");
+
+        dialog.showAndWait().ifPresent(size -> {
+            try {
+                double fontSize = Double.parseDouble(size);
+                if (fontSize > 0) {
+                    currentFontSize = fontSize;
+                    textArea.setFont(Font.font(textArea.getFont().getFamily(), currentFontSize));
+                }
+            } catch (NumberFormatException e) {
+                // Handle invalid input
+            }
+        });
+    }
+
+    private void openFontFamilyDialog() {
+        List<String> fontFamilies = Font.getFamilies();
+
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(textArea.getFont().getFamily(), fontFamilies);
+        dialog.setTitle("Font Family");
+        dialog.setHeaderText(null);
+        dialog.setContentText("Select a font family:");
+
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(fontFamily -> {
+            textArea.setFont(Font.font(fontFamily, currentFontSize));
+        });
+    }
+
+    private void openFontStyleDialog() {
+        List<String> fontStyles = Arrays.asList("Regular", "Bold", "Italic", "Bold Italic");
+
+        ChoiceDialog<String> dialog = new ChoiceDialog<>("Regular", fontStyles);
+        dialog.setTitle("Font Style");
+        dialog.setHeaderText(null);
+        dialog.setContentText("Select a font style:");
+
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(fontStyle -> {
+            FontWeight fontWeight = FontWeight.NORMAL;
+            FontPosture fontPosture = FontPosture.REGULAR;
+
+            if (fontStyle.equals("Bold") || fontStyle.equals("Bold Italic")) {
+                fontWeight = FontWeight.BOLD;
+            }
+            if (fontStyle.equals("Italic") || fontStyle.equals("Bold Italic")) {
+                fontPosture = FontPosture.ITALIC;
+            }
+
+            textArea.setFont(Font.font(textArea.getFont().getFamily(), fontWeight, fontPosture, currentFontSize));
+        });
+    }
+
 
 }
 
